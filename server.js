@@ -89,41 +89,32 @@ const dbName = 'report';
     })
 
     // Login, Using Users Collection
-    app.post('/login', (req, res) => {
+    app.post('/login', async (req, res) => {
         const { email, password } = req.body;
-        usersCollection.findOne({ email: email })
-            .then(user => {
-                if (user) {
-                    if (password === user.password) {
-                        res.send({ message: "Login Successfull", user: user });
-                    } else {
-                        res.send({ message: "Password Not Matching" })
-                    }
-                } else {
-                    res.send({ message: "User Not Registered, Please Register" })
-                }
-            })
-            .catch(error => console.error("Error during Login", error))
+        const user = await usersCollection.findOne({ email: email })
+        if (user) {
+            if (password === user.password) {
+                res.send({ message: "Login Successfull", user: user });
+            } else {
+                res.send({ message: "Password Not Matching" })
+            }
+        } else {
+            res.send({ message: "User Not Registered, Please Register" })
+        }
     })
 
     // Register, Using Users Collection
-    app.post('/register', (req, res) => {
+    app.post('/register', async (req, res) => {
         const { name, email, password } = req.body;
-        usersCollection.findOne({ email: email })
-            .then(user => {
-                if (user) {
-                    res.send({ message: "User Already Registered" });
-                } else {
-                    console.log("IN ELSE OF REGISTER");
-                    usersCollection.insertOne({ name: name, email: email, password: password })
-                        .then(result => {
-                            console.log("RESULT IN ELSE OF REGISTER", result);
-                            res.status(200).send({ message: 'Successfully Registered' })
-                        })
-                        .catch(error => console.error("Error during Registeration", error))
-                }
-            })
-            .catch(error => console.error("Error during Registeration", error))
+        const user = await usersCollection.findOne({ email: email })
+        if (user) {
+            res.send({ message: "User Already Registered" });
+        } else {
+            console.log("IN ELSE OF REGISTER");
+            const result = await usersCollection.insertOne({ name: name, email: email, password: password })
+            console.log("RESULT IN ELSE OF REGISTER", result);
+            res.status(200).send({ message: 'Successfully Registered' })
+        }
     })
 
 })();
